@@ -1,4 +1,5 @@
 <?php include 'header.php'; ?>
+<?php include 'config.php'; ?>
 
 <div class="container-fluid p-0 overflow-hidden">
     <div class="row g-0 min-vh-100-nav">
