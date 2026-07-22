@@ -1,3 +1,7 @@
+<?php
+// Phase 1: Session + DB — must be before any HTML
+require_once 'config.php';
+?>
 <?php include 'header.php'; ?>
 
 <!-- ═══════════════════════════════════════════════ -->
@@ -36,6 +40,17 @@
       <form action="tools.php" method="GET" id="hero-search-form"
             class="backdrop-blur-2xl bg-white/5 border border-white/10 rounded-3xl p-8 shadow-2xl shadow-black/40">
 
+        <!-- Logged-in greeting -->
+        <?php if (!empty($_SESSION['username'])): ?>
+        <div class="mb-4 flex items-center gap-2 text-sm text-white/50">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span>
+          Welcome back, <strong class="text-white/80"><?= htmlspecialchars($_SESSION['username']) ?></strong>!
+          <?php if ($_SESSION['role'] === 'admin'): ?>
+            <a href="admin_dashboard.php" class="ml-auto text-xs text-cyan-400 hover:text-cyan-300 no-underline transition-colors">Admin Panel →</a>
+          <?php endif; ?>
+        </div>
+        <?php endif; ?>
+
         <!-- Label -->
         <label for="heroSearchInput" class="block text-white font-semibold text-lg mb-3">
           What do you need?
@@ -49,6 +64,7 @@
             name="q"
             class="glass-input flex-1"
             placeholder="e.g. Image generation, Code assistant, Data analysis…"
+            value="<?= htmlspecialchars($_GET['q'] ?? '') ?>"
             autocomplete="off"
           >
           <button type="submit"
@@ -75,21 +91,25 @@
       </form>
     </div>
 
-    <!-- Stats row -->
+    <!-- Stats row — pulled live from DB -->
+    <?php
+      $toolCount = $conn->query("SELECT COUNT(*) as c FROM ai_tools")->fetch_assoc()['c'] ?? '—';
+      $catCount  = $conn->query("SELECT COUNT(*) as c FROM categories")->fetch_assoc()['c'] ?? '—';
+      $userCount = $conn->query("SELECT COUNT(*) as c FROM users")->fetch_assoc()['c'] ?? '—';
+    ?>
     <div class="pointer-events-auto mt-12 flex gap-8 sm:gap-16 text-center">
-      <?php
-        $stats = [
-          ['2,000+', 'AI Tools'],
-          ['50+', 'Categories'],
-          ['100K+', 'Users'],
-        ];
-        foreach ($stats as [$num, $label]):
-      ?>
       <div>
-        <div class="text-2xl sm:text-3xl font-black text-gradient"><?= $num ?></div>
-        <div class="text-xs text-white/40 uppercase tracking-widest mt-1"><?= $label ?></div>
+        <div class="text-2xl sm:text-3xl font-black text-gradient"><?= $toolCount ?>+</div>
+        <div class="text-xs text-white/40 uppercase tracking-widest mt-1">AI Tools</div>
       </div>
-      <?php endforeach; ?>
+      <div>
+        <div class="text-2xl sm:text-3xl font-black text-gradient"><?= $catCount ?>+</div>
+        <div class="text-xs text-white/40 uppercase tracking-widest mt-1">Categories</div>
+      </div>
+      <div>
+        <div class="text-2xl sm:text-3xl font-black text-gradient"><?= $userCount ?>+</div>
+        <div class="text-xs text-white/40 uppercase tracking-widest mt-1">Users</div>
+      </div>
     </div>
 
     <!-- Scroll indicator -->
@@ -107,7 +127,6 @@
   (function() {
     const searchInput = document.getElementById('heroSearchInput');
     if (!searchInput) return;
-
     searchInput.addEventListener('focus', () => {
       if (window.AAS3D) {
         window.AAS3D.icoSpeed.x = 0.01;
@@ -115,7 +134,6 @@
         window.AAS3D.targetColor = new THREE.Color(0x22d3ee);
       }
     });
-
     searchInput.addEventListener('blur', () => {
       if (window.AAS3D) {
         window.AAS3D.icoSpeed.x = 0.003;
