@@ -1,8 +1,8 @@
 # Ignore the large cloned skills repo (20K+ files)
 agentic-awesome-skills/
 
-# Keep .agents config but ignore the copied skills folder (large)
-.agents/skills/
+# Hide .agents workspace config folder from GitHub
+.agents/
 
 # PHP & common
 *.log
